@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define SERVERPORT "4950"	// the port users will be connecting to
+#define SERVERPORT "10024"	// the port users will be connecting to
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+  printf("Argv2 : %s", argv[2]);
+
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_DGRAM;
@@ -35,33 +37,41 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
+  else {printf("past rv");}
 
-	// loop through all the results and make a socket
-	for(p = servinfo; p != NULL; p = p->ai_next) {
-		if ((sockfd = socket(p->ai_family, p->ai_socktype,
+	p = servinfo;
+	if ((sockfd = socket(p->ai_family, p->ai_socktype,
 				p->ai_protocol)) == -1) {
 			perror("talker: socket");
-			continue;
-		}
-
-		break;
 	}
+  else {printf("past sockfd");}
 
 	if (p == NULL) {
 		fprintf(stderr, "talker: failed to bind socket\n");
 		return 2;
-	}
+	}else {printf("p not null");}
 
-	if ((numbytes = sendto(sockfd, argv[2], strlen(argv[2]), 0,
-			 p->ai_addr, p->ai_addrlen)) == -1) {
-		perror("talker: sendto");
-		exit(1);
-	}
+
+
+
+printf("&&&&&&&&&&&&&&&&&&&&&    %d     %d", p->ai_addr, p->ai_addrlen);
+
+
+  int y = 0;
+/**  while (y < 10) { */
+	  if ((numbytes = sendto(sockfd, argv[2], strlen(argv[2]), 0, servinfo->ai_addr, servinfo->ai_addrlen)) == -1) {
+		  perror("talker: sendto");
+		    exit(1);
+	    }
+    else {printf("Y: %d, Send %s",y, argv[2]);}
+ /** sleep(2);
+  y++;
+  }
 
 	freeaddrinfo(servinfo);
 
 	printf("talker: sent %d bytes to %s\n", numbytes, argv[1]);
 	close(sockfd);
-
+*/
 	return 0;
 }
