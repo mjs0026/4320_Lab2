@@ -1,3 +1,25 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+
+
+typedef struct message{
+        short length;
+        char checksum;
+        char gid;
+        char requestID;
+        char *hostnames;
+} message;
+
+
+
 int main(int argc, char *argv[]) {
 
   int counter = 0;
@@ -12,16 +34,14 @@ int main(int argc, char *argv[]) {
   if (argc != 5)
         printf("ERROR, usage: client servername port operation hostnames");
 
-  Msg m;
+  message m;
   m.gid = 'E';
   m.requestID = atoi(argv[3]);
   m.hostnames = malloc(strlen(argv[4]));
-  strcpy(m.hostnames, argv[4]);
+  strcpy(m.hostnames, argv[4]); //add strcat for ~s
   m.length=(strlen(argv[4]) + 5);
   printf("\nM.hostnames %s", m.hostnames);
-
-
-  memset(&hints, 0, sizeof hints);
+memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_DGRAM;
 
@@ -48,8 +68,6 @@ int main(int argc, char *argv[]) {
   }
         printf("\nSENDING = %d. &m = %s", sending, (char *)&m);
 
-//counter++;
-//}
     freeaddrinfo(servinfo);
     close(sockfd);
   printf("END\n\n");
