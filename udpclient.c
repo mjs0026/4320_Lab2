@@ -1,80 +1,57 @@
-/*
- ** talker.c -- a datagram "client" demo
- */
+int main(int argc, char *argv[]) {
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-
-#define SERVERPORT "10024"      // the port users will be connecting to
+  int counter = 0;
+  int sockfd, port, n, rv, sending;
+  struct sockaddr_in serv_addr;
+  struct hostent *server;
+  struct addrinfo hints, *servinfo, *p; //new
+  char buffer[256];
+  printf("0 %s 1 servername %s 2: port# %s 3: requestID %s 4: hostnames %s", argv[0], argv[1], argv[2], argv[3], argv[4]);
 
 
-typedef struct message{
-        short length;
-        char checksum;
-        char gid;
-        char requestID;
-        char *hostnames;
-} message;
+  if (argc != 5)
+        printf("ERROR, usage: client servername port operation hostnames");
+
+  Msg m;
+  m.gid = 'E';
+  m.requestID = atoi(argv[3]);
+  m.hostnames = malloc(strlen(argv[4]));
+  strcpy(m.hostnames, argv[4]);
+  m.length=(strlen(argv[4]) + 5);
+  printf("\nM.hostnames %s", m.hostnames);
 
 
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_DGRAM;
+
+  if ((rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo))!= 0 ) {
+  printf("Client getaddrinfo error"); exit(0);
+  }
 
 
-int main(int argc, char *argv[])
-{
-        int sockfd;
-        struct addrinfo hints, *servinfo, *p;
-        int rv;
-        int numbytes;
-
-        printf("%s, %s, %s, %s, %s ", argv[0], argv[1], argv[2], argv[3], argv[4]);
-        if (argc != 4) {
-                fprintf(stderr,"usage: client server port request \"hostnames\"\n");
-                exit(1);
+    for(p = servinfo; p != NULL; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype,
+                p->ai_protocol)) == -1) {
+            perror("talker: socket");
+            continue;
         }
 
-        memset(&hints, 0, sizeof hints);
-        hints.ai_family = AF_UNSPEC;
-hints.ai_socktype = SOCK_DGRAM;
+        break;
+    }
 
-        if ((rv = getaddrinfo(argv[1], SERVERPORT, &hints, &servinfo)) != 0) {
-                fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-                return 1;
-        }
+ port = atoi(argv[2]);
+ if (p == NULL) {printf("\nPROBLEM WITH P");}
 
-        // loop through all the results and make a socket
-        for(p = servinfo; p != NULL; p = p->ai_next) {
-                if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                             p->ai_protocol)) == -1) {
-                        perror("talker: socket");
-                        continue;
-                }
+  if ((sending = sendto(sockfd, (char *)&m, m.length, 0, p->ai_addr, p->ai_addrlen )) == -1){
+        printf("CLIENT error sendto"); exit(0);
+  }
+        printf("\nSENDING = %d. &m = %s", sending, (char *)&m);
 
-                break;
-        }
-
-        if (p == NULL) {
-                fprintf(stderr, "talker: failed to bind socket\n");
-                return 2;
-        }
-
-        if ((numbytes = sendto(sockfd, argv[2], strlen(argv[2]), 0,
-                           p->ai_addr, p->ai_addrlen)) == -1) {
-                perror("talker: sendto");
-                exit(1);
-        }
-
-        freeaddrinfo(servinfo);
-
-        printf("talker: sent %d bytes to %s\n", numbytes, argv[1]);
-        close(sockfd);
-
-        return 0;
+//counter++;
+//}
+    freeaddrinfo(servinfo);
+    close(sockfd);
+  printf("END\n\n");
+  return 0;
 }
