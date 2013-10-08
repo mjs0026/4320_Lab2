@@ -16,4 +16,5 @@ UDPSock.bind(listen_addr)
 # up to the server to sort this out!)
 while True:
           data,addr = UDPSock.recvfrom(1024)
-                  print data.strip(),addr
+          print data.strip(),addr
+          s = UDPSock.sendto("testing", addr)
