@@ -34,8 +34,8 @@ return temp;
 
 int main(int argc, char *argv[]) {
 
-    int rv, sockfd, port, n, sending, recieving;
-      struct addrinfo hints, *servinfo, *p; //new
+    int i, rv, sockfd, port, n, sending, receiving;
+      struct addrinfo hints, *servinfo, *p, *servaddr; //new
         char buffer[256], msg_in[1000];
           bzero(msg_in, 1000);
 
@@ -85,21 +85,8 @@ char *temp;
                                  }
                              printf("\nSENDING = %d. &m = %s", sending, (char *)&m);
 
-                             /*
-                              *  //new stuff -- get sockaddr stuff working FIRST
-                              *    recieving = recvfrom(sockfd, msg_in, 1000, 0, (struct sockaddr *)&servaddr, &len);
-                              *      printf("HERE goes... %d", recieving);
-                              *        int i = 0;
-                              *              char hex[10];
-                              *                    char hexmesg[1000];
-                              *                          bzero(hexmesg, 1000);
-                              *                                while(i < n) {
-                              *                                        sprintf(&hex[0], "%02X", 0xFF & msg_in[i]);
-                              *                                                strcat(hexmesg, hex);
-                              *                                                        i++;
-                              *                                                              }
-                              *                                                                    printf("%s", hexmesg);
-                              *                                                                    */
+                         receiving = recvfrom(sockfd, msg_in, 1000, 0, (struct sockaddr *)&servaddr, &len );
+                                 printf("\nReceiving... %s", msg_in);
 
                                freeaddrinfo(servinfo);
                                  close(sockfd);
